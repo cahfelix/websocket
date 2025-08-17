@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chat-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4757;
+            transition: background 0.3s ease;
+        }
+
+        .status-indicator.connected {
+            background: #2ed573;
+            box-shadow: 0 0 10px rgba(46, 213, 115, 0.5);
+        }
+
+        #chat {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            min-height: 400px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.server {
+            background: #e9ecef;
+            color: #495057;
+            margin-right: auto;
+        }
+
+        .message.system {
+            background: #fff3cd;
+            color: #856404;
+            text-align: center;
+            margin: 10px auto;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        #msgInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #msgInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendBtn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #sendBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        #sendBtn:active {
+            transform: translateY(0);
+        }
+
+        #sendBtn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar personalizada */
+        #chat::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chat::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #chat::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        #chat::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .chat-container {
+                margin: 10px;
+                border-radius: 15px;
+                min-height: 500px;
+            }
+
+            .chat-header {
+                padding: 15px;
+            }
+
+            .chat-header h2 {
+                font-size: 1.3rem;
+            }
+
+            #chat {
+                padding: 15px;
+                min-height: 300px;
+            }
+
+            .input-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>WebSocket Chat</h2>
+            <div class="status-indicator" id="statusIndicator"></div>
+        </div>
+
+        <!-- Área para mostrar mensagens -->
+        <div id="chat"></div>
+
+        <!-- Input e botão para mandar mensagem -->
+        <div class="input-container">
+            <input type="text" id="msgInput" placeholder="Digite uma mensagem..." />
+            <button id="sendBtn" onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        // Conectar ao servidor WebSocket
+        const socket = new WebSocket("ws://localhost:8080");
+
+        const chat = document.getElementById("chat");
+        const msgInput = document.getElementById("msgInput");
+        const sendBtn = document.getElementById("sendBtn");
+        const statusIndicator = document.getElementById("statusIndicator");
+
+        // Função para adicionar mensagem com estilo
+        function addMessage(text, type = 'system') {
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            chat.appendChild(messageDiv);
+
+            // Auto scroll para a última mensagem
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Função para atualizar status da conexão
+        function updateConnectionStatus(connected) {
+            if (connected) {
+                statusIndicator.classList.add('connected');
+                sendBtn.disabled = false;
+            } else {
+                statusIndicator.classList.remove('connected');
+                sendBtn.disabled = true;
+            }
+        }
+
+        // Quando a conexão abrir
+        socket.onopen = () => {
+            addMessage("✅ Conectado ao servidor", "system");
+            updateConnectionStatus(true);
+        };
+
+        // Quando receber mensagem do servidor
+        socket.onmessage = (event) => {
+            addMessage(event.data, "server");
+        };
+
+        // Quando a conexão fechar
+        socket.onclose = () => {
+            addMessage("❌ Conexão fechada", "system");
+            updateConnectionStatus(false);
+        };
+
+        // Quando houver erro na conexão
+        socket.onerror = (error) => {
+            addMessage("⚠️ Erro na conexão", "system");
+            updateConnectionStatus(false);
+        };
+
+        // Função para enviar mensagem ao servidor
+        function sendMessage() {
+            const msg = msgInput.value.trim();
+            if (msg && socket.readyState === WebSocket.OPEN) {
+                socket.send(msg);
+                addMessage(msg, "user");
+                msgInput.value = "";
+            }
+        }
+
+        // Permitir envio com Enter
+        msgInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                sendMessage();
+            }
+        });
+
+        // Inicializar com status desconectado
+        updateConnectionStatus(false);
+    </script>
+</body>
+</html>
+  </body>
+</html>
