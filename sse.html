@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Exemplo Server-Sent Events</h2>
+    <div id="output"></div>
+
+    <script>
+      const output = document.getElementById("output");
+      const eventSource = new EventSource("http://localhost:3000/events");
+
+      eventSource.onmessage = (event) => {
+        const p = document.createElement("p");
+        p.textContent = event.data;
+        output.appendChild(p);
+      };
+
+      eventSource.onerror = () => {
+        console.log("Erro na conexão SSE");
+      };
+    </script>
+  </body>
+</html>

@@ -1,11 +1,12 @@
-# 🚀 WebSocket Chat Application
+# 🚀 Aplicações de Comunicação em Tempo Real
 
-Uma aplicação de chat em tempo real usando WebSockets com interface moderna e responsiva.
+Demonstrações de comunicação em tempo real usando WebSockets e Server-Sent Events (SSE) com interfaces modernas e responsivas.
 
 ## 📋 Índice
 
 - [Sobre o Projeto](#sobre-o-projeto)
-- [Funcionalidades](#funcionalidades)
+- [WebSocket Chat](#websocket-chat)
+- [Server-Sent Events (SSE)](#server-sent-events-sse)
 - [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Pré-requisitos](#pré-requisitos)
 - [Instalação](#instalação)
@@ -16,7 +17,14 @@ Uma aplicação de chat em tempo real usando WebSockets com interface moderna e 
 
 ## 📖 Sobre o Projeto
 
-Este projeto demonstra a implementação de comunicação em tempo real usando WebSockets. Inclui um servidor Node.js e uma interface web moderna para troca de mensagens instantâneas.
+Este projeto demonstra duas abordagens diferentes para comunicação em tempo real:
+
+1. **WebSockets**: Comunicação bidirecional para chat interativo
+2. **Server-Sent Events (SSE)**: Comunicação unidirecional do servidor para o cliente
+
+Ambas as implementações incluem servidores Node.js e interfaces web modernas.
+
+## 💬 WebSocket Chat
 
 ### ✨ Funcionalidades
 
@@ -29,16 +37,28 @@ Este projeto demonstra a implementação de comunicação em tempo real usando W
 - 📜 **Auto Scroll**: Rolagem automática para novas mensagens
 - ⚡ **Animações Suaves**: Transições e efeitos visuais elegantes
 
+## 📡 Server-Sent Events (SSE)
+
+### ✨ Funcionalidades
+
+- 📡 **Atualizações em Tempo Real**: Recebe dados do servidor automaticamente
+- ⏰ **Timestamps**: Exibe horário das atualizações recebidas
+- 🔄 **Conexão Persistente**: Mantém conexão aberta para receber eventos
+- 🎯 **Unidirecional**: Comunicação do servidor para o cliente
+- 📊 **Ideal para**: Notificações, feeds de dados, atualizações de status
+- ⚡ **Simples e Eficiente**: Protocolo HTTP padrão, sem necessidade de bibliotecas especiais
+
 ## 🛠 Tecnologias Utilizadas
 
 ### Backend
 - **Node.js** - Runtime JavaScript
 - **ws** - Biblioteca WebSocket para Node.js
+- **Express.js** - Framework web para Server-Sent Events
 
 ### Frontend
 - **HTML5** - Estrutura da página
 - **CSS3** - Estilização moderna com gradientes e animações
-- **JavaScript (ES6+)** - Lógica do cliente WebSocket
+- **JavaScript (ES6+)** - Lógica do cliente WebSocket e EventSource API
 
 ## 📋 Pré-requisitos
 
@@ -61,7 +81,9 @@ Antes de começar, certifique-se de ter instalado:
 
 ## 💻 Como Usar
 
-### 1. Iniciar o Servidor WebSocket
+### 🔌 WebSocket Chat
+
+#### 1. Iniciar o Servidor WebSocket
 
 ```bash
 node websocket.js
@@ -72,7 +94,7 @@ Você verá a mensagem:
 Servidor WebSocket rodando em ws://localhost:8080
 ```
 
-### 2. Abrir a Interface Web
+#### 2. Abrir a Interface Web
 
 Abra o arquivo `websocket.html` em seu navegador ou use um servidor local:
 
@@ -88,12 +110,48 @@ python -m http.server 3000
 # Clique com botão direito no arquivo e selecione "Open with Live Server"
 ```
 
-### 3. Testar a Comunicação
+#### 3. Testar a Comunicação
 
 1. A interface mostrará "✅ Conectado ao servidor" quando a conexão for estabelecida
 2. Digite uma mensagem no campo de texto
 3. Pressione Enter ou clique em "Enviar"
 4. Veja a resposta do servidor em tempo real
+
+### 📡 Server-Sent Events (SSE)
+
+#### 1. Iniciar o Servidor SSE
+
+```bash
+node sse.js
+```
+
+Você verá a mensagem:
+```
+Servidor SSE rodando em http://localhost:3000/events
+```
+
+#### 2. Abrir a Interface Web
+
+Abra o arquivo `sse.html` em seu navegador:
+
+```bash
+# Opção 1: Abrir diretamente no navegador
+open sse.html
+
+# Opção 2: Usar um servidor HTTP simples (Python)
+python -m http.server 8000
+# Depois acesse: http://localhost:8000/sse.html
+
+# Opção 3: Usar Live Server (VS Code Extension)
+# Clique com botão direito no arquivo e selecione "Open with Live Server"
+```
+
+#### 3. Observar as Atualizações
+
+1. A página conectará automaticamente ao endpoint `/events`
+2. Você verá a mensagem inicial: "Conexão SSE estabelecida!"
+3. A cada 2 segundos, uma nova atualização com timestamp será exibida
+4. As mensagens aparecerão automaticamente sem necessidade de interação
 
 ## 📁 Estrutura do Projeto
 
